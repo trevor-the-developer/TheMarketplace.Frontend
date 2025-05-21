@@ -38,6 +38,7 @@ api.interceptors.response.use(
         const token = localStorage.getItem('token');
         originalRequest.headers.Authorization = `Bearer ${token}`;
         return api(originalRequest);
+        // TODO: add refresh retry option ingest
       } catch (refreshError) {
         // If refresh fails, logout and redirect to login
         store.dispatch('auth/logout');
