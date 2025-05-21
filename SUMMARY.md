@@ -75,7 +75,7 @@ The frontend integrates with The Marketplace API, which is expected to run at ht
    - Excellent documentation and ecosystem support
 
 2. **Vuex for State Management**
-   - Centralized store for authentication, listings, and cards data
+   - Centralised store for authentication, listings, and cards data
    - Clear separation between API calls and UI components
    - Consistent error handling and loading states
 
