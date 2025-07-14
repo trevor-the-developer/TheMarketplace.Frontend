@@ -22,15 +22,40 @@ const actions = {
     
     try {
       const response = await authService.login(credentials);
-      commit('setToken', response.securityToken);
-      commit('setRefreshToken', response.refreshToken);
-      commit('setUser', {
-        id: response.id,
-        email: response.email
-      });
+      
+      // Handle different possible response structures
+      if (response.accessToken) {
+        commit('setToken', response.accessToken);
+        commit('setRefreshToken', response.refreshToken);
+        commit('setUser', {
+          id: response.userId || response.id,
+          email: credentials.email // Use email from credentials since API might not return it
+        });
+      } else {
+        // Handle other response formats
+        commit('setToken', response.securityToken || response.token);
+        commit('setRefreshToken', response.refreshToken);
+        commit('setUser', {
+          id: response.id || response.userId,
+          email: response.email || credentials.email
+        });
+      }
+      
       return response;
     } catch (error) {
-      commit('setError', error.response?.data || 'Login failed');
+      // Handle different error response formats
+      let errorMessage = 'Login failed';
+      if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.title) {
+        errorMessage = error.response.data.title;
+      } else if (typeof error.response?.data === 'string') {
+        errorMessage = error.response.data;
+      }
+      
+      commit('setError', errorMessage);
       throw error;
     } finally {
       commit('setLoading', false);
@@ -86,8 +111,11 @@ const actions = {
     if (!state.refreshToken) return;
     
     try {
-      const response = await authService.refreshToken({ refreshToken: state.refreshToken });
-      commit('setToken', response.securityToken);
+      const response = await authService.refreshToken({ 
+        accessToken: state.token,
+        refreshToken: state.refreshToken 
+      });
+      commit('setToken', response.accessToken || response.securityToken);
       commit('setRefreshToken', response.refreshToken);
       return response;
     } catch (error) {
@@ -96,9 +124,14 @@ const actions = {
     }
   },
   
-  async logout({ commit }) {
+  async logout({ commit, state }) {
     try {
-      await authService.logout();
+      if (state.token && state.refreshToken) {
+        await authService.logout({
+          accessToken: state.token,
+          refreshToken: state.refreshToken
+        });
+      }
     } catch (error) {
       console.error('Logout error:', error);
     } finally {

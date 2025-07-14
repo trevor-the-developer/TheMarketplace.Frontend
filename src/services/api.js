@@ -2,7 +2,7 @@ import axios from 'axios';
 import store from '../store';
 
 const api = axios.create({
-  baseURL: 'https://localhost:7220', // Update with your actual API URL
+  baseURL: '/api', // Use Vite proxy instead of direct backend calls
   headers: {
     'Content-Type': 'application/json'
   }

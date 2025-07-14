@@ -21,7 +21,9 @@ const actions = {
     
     try {
       const response = await listingService.getListings();
-      commit('setListings', response.listings);
+      // Handle different response formats
+      const listings = Array.isArray(response) ? response : (response.listings || []);
+      commit('setListings', listings);
       return response;
     } catch (error) {
       commit('setError', error.response?.data || 'Failed to fetch listings');

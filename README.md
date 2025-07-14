@@ -2,6 +2,14 @@
 
 This is a Vue.js frontend for The Marketplace API.
 
+## Dependencies
+
+**Important**: This frontend application depends on the backend API to function properly. You must have [The Marketplace](https://github.com/trevor-the-developer/TheMarketplace) .NET project running locally.
+
+- **Backend Repository**: https://github.com/trevor-the-developer/TheMarketplace
+- **Expected Backend Port**: 5212 (configured in Vite proxy)
+- **Backend API Documentation**: Available at `http://localhost:5212/swagger` when running
+
 ## Features
 
 - User authentication (login, registration, token management)
@@ -31,7 +39,7 @@ src/
 
 - Node.js 16+ 
 - npm or yarn
-- The Marketplace API running (on default port: 7220)
+- The Marketplace API running on port 5212 (see backend dependency above)
 
 ### Installation
 
@@ -54,6 +62,33 @@ npm run build
 ```
 
 The build artifacts will be stored in the `dist/` directory.
+
+## Technical Details
+
+### Proxy Configuration
+
+The development server uses Vite's proxy feature to forward API requests to the backend:
+
+- **Frontend URL**: `http://localhost:3000`
+- **API Proxy**: All requests to `/api/*` are forwarded to `http://localhost:5212`
+- **URL Rewriting**: The `/api` prefix is removed when forwarding to the backend
+- **Example**: `POST /api/auth/login` → `POST http://localhost:5212/auth/login`
+
+### Current Implementation Status
+
+- ✅ **Authentication Flow**: Login, registration, email confirmation, token refresh
+- ✅ **Vuex Store**: State management for auth, listings, and cards
+- ✅ **Vue Router**: Protected routes and navigation
+- ✅ **Bootstrap Integration**: Responsive UI components
+- ✅ **Axios Configuration**: HTTP client with token management
+- ✅ **Proxy Configuration**: CORS-free API communication
+- ⚠️ **Registration Step Two**: Backend endpoint requires debugging
+- 🔄 **Marketplace Features**: Basic listing display implemented
+
+### Known Issues
+
+- Registration step two (email confirmation completion) currently returns 400 error from backend
+- This blocks completing user registration and login testing
 
 ## API Integration
 

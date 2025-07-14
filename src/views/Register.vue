@@ -13,6 +13,28 @@
           
           <form v-if="!registrationSuccess" @submit.prevent="handleRegister">
             <div class="mb-3">
+              <label for="firstName" class="form-label">First Name</label>
+              <input
+                type="text"
+                id="firstName"
+                v-model="firstName"
+                class="form-control"
+                required
+              />
+            </div>
+            
+            <div class="mb-3">
+              <label for="lastName" class="form-label">Last Name</label>
+              <input
+                type="text"
+                id="lastName"
+                v-model="lastName"
+                class="form-control"
+                required
+              />
+            </div>
+            
+            <div class="mb-3">
               <label for="email" class="form-label">Email</label>
               <input
                 type="email"
@@ -73,6 +95,8 @@ export default {
   
   data() {
     return {
+      firstName: '',
+      lastName: '',
       email: '',
       password: '',
       confirmPassword: '',
@@ -101,8 +125,12 @@ export default {
       
       try {
         await this.register({
+          firstName: this.firstName,
+          lastName: this.lastName,
           email: this.email,
-          password: this.password
+          password: this.password,
+          dateOfBirth: new Date().toISOString(), // Default to today for now
+          role: 0 // Default role
         });
         this.registrationSuccess = true;
       } catch (error) {

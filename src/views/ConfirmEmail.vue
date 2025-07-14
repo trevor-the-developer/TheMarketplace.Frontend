@@ -81,10 +81,11 @@ export default {
     // Get query parameters from URL
     const queryParams = new URLSearchParams(window.location.search);
     this.userId = queryParams.get('userId');
-    this.code = queryParams.get('code');
+    this.code = queryParams.get('token'); // API uses 'token' not 'code'
+    const email = queryParams.get('email');
     
-    if (this.userId && this.code) {
-      this.confirmEmail();
+    if (this.userId && this.code && email) {
+      this.confirmEmail(email);
     }
   },
   
