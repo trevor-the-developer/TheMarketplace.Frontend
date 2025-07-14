@@ -46,6 +46,21 @@
             </div>
             
             <div class="mb-3">
+              <label for="dateOfBirth" class="form-label">Date of Birth</label>
+              <input
+                type="date"
+                id="dateOfBirth"
+                v-model="dateOfBirth"
+                class="form-control"
+                required
+                :max="maxDate"
+              />
+              <div v-if="ageError" class="text-danger mt-1">
+                You must be at least 13 years old to register
+              </div>
+            </div>
+            
+            <div class="mb-3">
               <label for="password" class="form-label">Password</label>
               <input
                 type="password"
@@ -71,7 +86,7 @@
             </div>
             
             <div class="d-grid">
-              <button type="submit" class="btn btn-primary" :disabled="loading || passwordMismatch">
+              <button type="submit" class="btn btn-primary" :disabled="loading || !canSubmit">
                 <span v-if="loading" class="spinner-border spinner-border-sm me-1"></span>
                 Register
               </button>
@@ -100,6 +115,7 @@ export default {
       email: '',
       password: '',
       confirmPassword: '',
+      dateOfBirth: '',
       registrationSuccess: false
     };
   },
@@ -112,6 +128,30 @@ export default {
     
     passwordMismatch() {
       return this.password && this.confirmPassword && this.password !== this.confirmPassword;
+    },
+    
+    maxDate() {
+      // Set max date to today
+      const today = new Date();
+      return today.toISOString().split('T')[0];
+    },
+    
+    ageError() {
+      if (!this.dateOfBirth) return false;
+      
+      const birthDate = new Date(this.dateOfBirth);
+      const today = new Date();
+      const age = today.getFullYear() - birthDate.getFullYear();
+      const monthDiff = today.getMonth() - birthDate.getMonth();
+      
+      // Check if birthday has passed this year
+      const actualAge = monthDiff < 0 || (monthDiff === 0 && today.getDate() < birthDate.getDate()) ? age - 1 : age;
+      
+      return actualAge < 13;
+    },
+    
+    canSubmit() {
+      return !this.passwordMismatch && !this.ageError && this.dateOfBirth;
     }
   },
   
@@ -121,7 +161,7 @@ export default {
     }),
     
     async handleRegister() {
-      if (this.passwordMismatch) return;
+      if (!this.canSubmit) return;
       
       try {
         await this.register({
@@ -129,7 +169,7 @@ export default {
           lastName: this.lastName,
           email: this.email,
           password: this.password,
-          dateOfBirth: new Date().toISOString(), // Default to today for now
+          dateOfBirth: new Date(this.dateOfBirth).toISOString(),
           role: 0 // Default role
         });
         this.registrationSuccess = true;

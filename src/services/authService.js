@@ -12,15 +12,11 @@ const authService = {
   },
   
   async confirmEmail(confirmData) {
-    const url = `/auth/confirm-email?Email=${confirmData.email}&UserId=${confirmData.userId}&Token=${confirmData.token}`;
+    const url = `/auth/confirm-email?email=${encodeURIComponent(confirmData.email)}&userId=${encodeURIComponent(confirmData.userId)}&token=${encodeURIComponent(confirmData.token)}`;
     const response = await api.get(url);
     return response.data;
   },
   
-  async completeRegistration(registrationData) {
-    const response = await api.post('/auth/register/step-two', registrationData);
-    return response.data;
-  },
   
   async refreshToken(refreshData) {
     const response = await api.post('/auth/refresh', refreshData);

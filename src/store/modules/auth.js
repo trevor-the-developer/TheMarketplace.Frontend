@@ -92,21 +92,6 @@ const actions = {
     }
   },
   
-  async completeRegistration({ commit }, registrationData) {
-    commit('setLoading', true);
-    commit('clearError');
-    
-    try {
-      const response = await authService.completeRegistration(registrationData);
-      return response;
-    } catch (error) {
-      commit('setError', error.response?.data || 'Registration completion failed');
-      throw error;
-    } finally {
-      commit('setLoading', false);
-    }
-  },
-  
   async refreshToken({ commit, state }) {
     if (!state.refreshToken) return;
     

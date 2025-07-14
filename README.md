@@ -71,41 +71,54 @@ The development server uses Vite's proxy feature to forward API requests to the 
 
 - **Frontend URL**: `http://localhost:3000`
 - **API Proxy**: All requests to `/api/*` are forwarded to `http://localhost:5212`
-- **URL Rewriting**: The `/api` prefix is removed when forwarding to the backend
-- **Example**: `POST /api/auth/login` → `POST http://localhost:5212/auth/login`
+- **No URL Rewriting**: The `/api` prefix is preserved
+- **Example**: `POST /api/auth/login` → `POST http://localhost:5212/api/auth/login`
 
 ### Current Implementation Status
 
-- ✅ **Authentication Flow**: Login, registration, email confirmation, token refresh
+- ✅ **Complete Authentication Flow**: Registration, email confirmation, and login working
+- ✅ **Age Validation**: Registration requires users to be at least 13 years old
+- ✅ **JWT Authentication**: Secure token-based authentication with refresh
 - ✅ **Vuex Store**: State management for auth, listings, and cards
-- ✅ **Vue Router**: Protected routes and navigation
+- ✅ **Vue Router**: Protected routes and navigation guards
 - ✅ **Bootstrap Integration**: Responsive UI components
-- ✅ **Axios Configuration**: HTTP client with token management
+- ✅ **Axios Configuration**: HTTP client with token management and interceptors
 - ✅ **Proxy Configuration**: CORS-free API communication
-- ⚠️ **Registration Step Two**: Backend endpoint requires debugging
-- 🔄 **Marketplace Features**: Basic listing display implemented
+- ✅ **Error Handling**: Comprehensive error handling and user feedback
+- ✅ **Marketplace Features**: Basic listing display implemented
 
-### Known Issues
+### Registration Process
 
-- Registration step two (email confirmation completion) currently returns 400 error from backend
-- This blocks completing user registration and login testing
+1. **User Registration**: Fill out form with name, email, date of birth, and password
+2. **Email Confirmation**: Click confirmation link to complete registration
+3. **Login**: Use confirmed credentials to access protected features
+
+### Development Notes
+
+- The registration flow has been simplified to a single-step process with email confirmation
+- All authentication endpoints are working correctly with proper error handling
+- URL encoding for email confirmation tokens has been fixed
 
 ## API Integration
 
 This frontend integrates with the following API endpoints:
 
-- Authentication
-  - `/api/login/` - User login
-  - `/api/register/` - User registration (step one)
-  - `/api/confirm_email/` - Email confirmation
-  - `/api/register/step-two` - Complete registration
-  - `/api/refresh/` - Refresh JWT token
-  - `/api/logout/` - Revoke JWT token
+### Authentication
+- `POST /api/auth/login` - User login
+- `POST /api/auth/register` - User registration with email confirmation
+- `GET /api/auth/confirm-email` - Email confirmation
+- `POST /api/auth/refresh` - Refresh JWT token
+- `POST /api/auth/logout` - Revoke JWT token
 
-- Listings
-  - `/api/get/listing/` - Get all listings
-  - `/api/get/listing/{id}` - Get specific listing
+### Listings
+- `GET /api/listings` - Get all listings
+- `GET /api/listings/{id}` - Get specific listing
 
-- Cards
-  - `/api/get/cards/` - Get all cards
-  - `/api/get/card/{id}` - Get specific card
+### Cards
+- `GET /api/cards` - Get all cards
+- `GET /api/cards/{id}` - Get specific card
+
+### Other Resources
+- `GET /api/products` - Get all products
+- `GET /api/media` - Get media files
+- `GET /api/user-profiles` - Get user profiles
