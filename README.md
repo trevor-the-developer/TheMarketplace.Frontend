@@ -76,16 +76,23 @@ The development server uses Vite's proxy feature to forward API requests to the 
 
 ### Current Implementation Status
 
-- ✅ **Complete Authentication Flow**: Registration, email confirmation, and login working
-- ✅ **Age Validation**: Registration requires users to be at least 13 years old
-- ✅ **JWT Authentication**: Secure token-based authentication with refresh
-- ✅ **Vuex Store**: State management for auth, listings, and cards
-- ✅ **Vue Router**: Protected routes and navigation guards
-- ✅ **Bootstrap Integration**: Responsive UI components
-- ✅ **Axios Configuration**: HTTP client with token management and interceptors
-- ✅ **Proxy Configuration**: CORS-free API communication
-- ✅ **Error Handling**: Comprehensive error handling and user feedback
-- ✅ **Marketplace Features**: Basic listing display implemented
+- ✅ **Complete Authentication Flow**: Seamless registration, email confirmation, and login
+- ✅ **Email Confirmation**: Proper routing to frontend URLs
+- ✅ **Age Validation**: Users must be at least 13 years old to register
+- ✅ **JWT Authentication**: Secure token authentication with automatic refresh
+- ✅ **Proxy Setup**: CORS-free communication via Vite proxy
+- ✅ **Vuex Store**: Centralized state management
+- ✅ **Vue Router**: Navigation guards and protected routes
+- ✅ **Bootstrap Integration**: Responsive and accessible design
+- ✅ **Axios Configuration**: Token management with interceptors
+- ✅ **Error Handling**: Comprehensive user feedback
+- ✅ **Marketplace Listings**: Basic listing functionality
+
+### Recent Improvements
+
+- **Registration and Email**: Improved registration flow with single-step user confirmation
+- **MailHog Integration**: Enhanced email testing with correct frontend URLs
+- **Configuration Management**: Centralized frontend URL configuration
 
 ### Registration Process
 
