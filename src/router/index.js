@@ -5,6 +5,7 @@ import ConfirmEmail from '../views/ConfirmEmail.vue';
 import ListingList from '../views/ListingList.vue';
 import ListingDetail from '../views/ListingDetail.vue';
 import CardDetail from '../views/CardDetail.vue';
+import ProductDetail from '../views/ProductDetail.vue';
 import store from '../store';
 
 const routes = [
@@ -46,6 +47,12 @@ const routes = [
     path: '/card/:id',
     name: 'CardDetail',
     component: CardDetail,
+    meta: { requiresAuth: true }
+  },
+  {
+    path: '/product/:id',
+    name: 'ProductDetail',
+    component: ProductDetail,
     meta: { requiresAuth: true }
   }
 ];

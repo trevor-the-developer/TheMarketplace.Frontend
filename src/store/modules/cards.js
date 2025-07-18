@@ -24,7 +24,7 @@ const actions = {
       commit('setCards', response.cards);
       return response;
     } catch (error) {
-      commit('setError', error.response?.data || 'Failed to fetch cards');
+      commit('setError', error.response?.data?.detail || 'Failed to fetch cards');
       throw error;
     } finally {
       commit('setLoading', false);
@@ -40,7 +40,54 @@ const actions = {
       commit('setCurrentCard', response.card);
       return response;
     } catch (error) {
-      commit('setError', error.response?.data || 'Failed to fetch card');
+      commit('setError', error.response?.data?.detail || 'Failed to fetch card');
+      throw error;
+    } finally {
+      commit('setLoading', false);
+    }
+  },
+  
+  async createCard({ commit }, cardData) {
+    commit('setLoading', true);
+    commit('clearError');
+    
+    try {
+      const response = await cardService.createCard(cardData);
+      commit('addCard', response.card);
+      return response;
+    } catch (error) {
+      commit('setError', error.response?.data?.detail || 'Failed to create card');
+      throw error;
+    } finally {
+      commit('setLoading', false);
+    }
+  },
+  
+  async updateCard({ commit }, { id, cardData }) {
+    commit('setLoading', true);
+    commit('clearError');
+    
+    try {
+      const response = await cardService.updateCard(id, cardData);
+      commit('updateCard', response.card);
+      return response;
+    } catch (error) {
+      commit('setError', error.response?.data?.detail || 'Failed to update card');
+      throw error;
+    } finally {
+      commit('setLoading', false);
+    }
+  },
+  
+  async deleteCard({ commit }, id) {
+    commit('setLoading', true);
+    commit('clearError');
+    
+    try {
+      await cardService.deleteCard(id);
+      commit('removeCard', id);
+    } catch (error) {
+      commit('setError', error.response?.data?.detail || 'Failed to delete card');
       throw error;
     } finally {
       commit('setLoading', false);
@@ -55,6 +102,27 @@ const mutations = {
   
   setCurrentCard(state, card) {
     state.currentCard = card;
+  },
+  
+  addCard(state, card) {
+    state.cards.push(card);
+  },
+  
+  updateCard(state, updatedCard) {
+    const index = state.cards.findIndex(c => c.id === updatedCard.id);
+    if (index !== -1) {
+      state.cards.splice(index, 1, updatedCard);
+    }
+    if (state.currentCard && state.currentCard.id === updatedCard.id) {
+      state.currentCard = updatedCard;
+    }
+  },
+  
+  removeCard(state, cardId) {
+    state.cards = state.cards.filter(c => c.id !== cardId);
+    if (state.currentCard && state.currentCard.id === cardId) {
+      state.currentCard = null;
+    }
   },
   
   setLoading(state, loading) {

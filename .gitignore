@@ -62,3 +62,6 @@ jspm_packages/
 
 # Hot-reload state
 .vite/
+
+# Context files
+FRONTEND_CONTEXT.md

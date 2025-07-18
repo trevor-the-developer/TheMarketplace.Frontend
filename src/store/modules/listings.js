@@ -26,7 +26,7 @@ const actions = {
       commit('setListings', listings);
       return response;
     } catch (error) {
-      commit('setError', error.response?.data || 'Failed to fetch listings');
+      commit('setError', error.response?.data?.detail || 'Failed to fetch listings');
       throw error;
     } finally {
       commit('setLoading', false);
@@ -42,7 +42,54 @@ const actions = {
       commit('setCurrentListing', response.listing);
       return response;
     } catch (error) {
-      commit('setError', error.response?.data || 'Failed to fetch listing');
+      commit('setError', error.response?.data?.detail || 'Failed to fetch listing');
+      throw error;
+    } finally {
+      commit('setLoading', false);
+    }
+  },
+  
+  async createListing({ commit }, listingData) {
+    commit('setLoading', true);
+    commit('clearError');
+    
+    try {
+      const response = await listingService.createListing(listingData);
+      commit('addListing', response.listing);
+      return response;
+    } catch (error) {
+      commit('setError', error.response?.data?.detail || 'Failed to create listing');
+      throw error;
+    } finally {
+      commit('setLoading', false);
+    }
+  },
+  
+  async updateListing({ commit }, { id, listingData }) {
+    commit('setLoading', true);
+    commit('clearError');
+    
+    try {
+      const response = await listingService.updateListing(id, listingData);
+      commit('updateListing', response.listing);
+      return response;
+    } catch (error) {
+      commit('setError', error.response?.data?.detail || 'Failed to update listing');
+      throw error;
+    } finally {
+      commit('setLoading', false);
+    }
+  },
+  
+  async deleteListing({ commit }, id) {
+    commit('setLoading', true);
+    commit('clearError');
+    
+    try {
+      await listingService.deleteListing(id);
+      commit('removeListing', id);
+    } catch (error) {
+      commit('setError', error.response?.data?.detail || 'Failed to delete listing');
       throw error;
     } finally {
       commit('setLoading', false);
@@ -57,6 +104,27 @@ const mutations = {
   
   setCurrentListing(state, listing) {
     state.currentListing = listing;
+  },
+  
+  addListing(state, listing) {
+    state.listings.push(listing);
+  },
+  
+  updateListing(state, updatedListing) {
+    const index = state.listings.findIndex(l => l.id === updatedListing.id);
+    if (index !== -1) {
+      state.listings.splice(index, 1, updatedListing);
+    }
+    if (state.currentListing && state.currentListing.id === updatedListing.id) {
+      state.currentListing = updatedListing;
+    }
+  },
+  
+  removeListing(state, listingId) {
+    state.listings = state.listings.filter(l => l.id !== listingId);
+    if (state.currentListing && state.currentListing.id === listingId) {
+      state.currentListing = null;
+    }
   },
   
   setLoading(state, loading) {
