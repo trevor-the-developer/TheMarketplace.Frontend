@@ -144,47 +144,43 @@
         </div>
       </div>
       
-      <div class="d-flex justify-content-between align-items-center mb-3">
-        <h2>Media</h2>
-        <button class="btn btn-primary" @click="showCreateMediaForm = true">
-          <i class="bi bi-plus"></i> Add Media
-        </button>
-      </div>
-      
-      <div class="alert alert-info">
-        <i class="bi bi-info-circle"></i> 
-        Media upload functionality is not yet implemented. This is a placeholder for future development.
-        You can create media entries with dummy data for testing purposes.
-      </div>
-      
-      <div v-if="!product.productDetail?.media?.length" class="alert alert-secondary">
-        No media available for this product.
-      </div>
-      
-      <div v-else class="row">
-        <div v-for="media in product.productDetail.media" :key="media.id" class="col-md-4 mb-4">
-          <div class="card">
-            <div class="card-body">
-              <h6 class="card-title">{{ media.fileName }}</h6>
-              <p class="card-text">
-                <small class="text-muted">Type: {{ media.mediaType }}</small><br>
-                <small class="text-muted">Size: {{ media.fileSize }} bytes</small>
-              </p>
-              <div class="d-flex justify-content-between">
-                <span class="badge bg-primary">{{ media.mediaType }}</span>
-                <div class="btn-group">
-                  <button 
-                    class="btn btn-outline-danger btn-sm"
-                    @click="confirmDeleteMedia(media)"
-                    title="Delete media"
-                  >
-                    <i class="bi bi-trash"></i>
-                  </button>
-                </div>
-              </div>
-            </div>
-          </div>
+      <!-- Media Upload Section -->
+      <div class="media-section mb-4">
+        <div class="d-flex justify-content-between align-items-center mb-3">
+          <h2>Media</h2>
         </div>
+        
+        <!-- Success/Error Messages for Media -->
+        <div v-if="mediaSuccessMessage" class="alert alert-success alert-dismissible fade show">
+          {{ mediaSuccessMessage }}
+          <button type="button" class="btn-close" @click="mediaSuccessMessage = null"></button>
+        </div>
+        
+        <!-- Media Upload Component -->
+        <MediaUpload 
+          v-if="product.productDetail?.id"
+          :product-detail-id="product.productDetail.id"
+          @upload-success="handleUploadSuccess"
+          @upload-error="handleUploadError"
+          class="mb-4"
+        />
+        
+        <!-- Media Gallery Component -->
+        <MediaGallery 
+          :media="productMedia"
+          :loading="mediaLoading"
+          :error="mediaError"
+          @media-deleted="handleMediaDeleted"
+          @media-preview="handleMediaPreview"
+          @refresh-media="refreshProductMedia"
+        />
+        
+        <!-- Media Preview Modal -->
+        <MediaPreview 
+          :show="showMediaPreview"
+          :media="selectedMedia"
+          @close="closeMediaPreview"
+        />
       </div>
     </div>
   </div>
@@ -194,12 +190,18 @@
 import { mapActions, mapGetters } from 'vuex';
 import ProductForm from '../components/ProductForm.vue';
 import ProductDetailForm from '../components/ProductDetailForm.vue';
+import MediaUpload from '../components/MediaUpload.vue';
+import MediaGallery from '../components/MediaGallery.vue';
+import MediaPreview from '../components/MediaPreview.vue';
 
 export default {
   name: 'ProductDetail',
   components: {
     ProductForm,
-    ProductDetailForm
+    ProductDetailForm,
+    MediaUpload,
+    MediaGallery,
+    MediaPreview
   },
   data() {
     return {
@@ -209,6 +211,12 @@ export default {
       showCreateMediaForm: false,
       showDeleteMediaModal: false,
       mediaToDelete: null,
+      // Media-related state
+      mediaSuccessMessage: null,
+      mediaError: null,
+      mediaLoading: false,
+      showMediaPreview: false,
+      selectedMedia: null,
       successMessage: null,
       productLoading: false,
       productDetailLoading: false
@@ -219,7 +227,11 @@ export default {
       product: 'products/currentProduct',
       loading: 'products/loading',
       error: 'products/error'
-    })
+    }),
+    
+    productMedia() {
+      return this.product?.productDetail?.media || [];
+    }
   },
   
   created() {
@@ -300,6 +312,49 @@ export default {
     confirmDeleteMedia(media) {
       this.mediaToDelete = media;
       this.showDeleteMediaModal = true;
+    },
+
+    // Media upload handlers
+    handleUploadSuccess(result) {
+      this.mediaSuccessMessage = result.message || 'Files uploaded successfully!';
+      // Refresh the product to get updated media
+      this.fetchProduct(this.$route.params.id);
+      // Clear success message after 5 seconds
+      setTimeout(() => {
+        this.mediaSuccessMessage = null;
+      }, 5000);
+    },
+
+    handleUploadError(error) {
+      console.error('Upload error:', error);
+      this.mediaError = error.message || 'Upload failed. Please try again.';
+      // Clear error message after 10 seconds
+      setTimeout(() => {
+        this.mediaError = null;
+      }, 10000);
+    },
+
+    handleMediaDeleted(deletedMedia) {
+      this.mediaSuccessMessage = `Media "${deletedMedia.title}" deleted successfully.`;
+      // Clear success message after 3 seconds
+      setTimeout(() => {
+        this.mediaSuccessMessage = null;
+      }, 3000);
+    },
+
+    handleMediaPreview(media) {
+      this.selectedMedia = media;
+      this.showMediaPreview = true;
+    },
+
+    closeMediaPreview() {
+      this.showMediaPreview = false;
+      this.selectedMedia = null;
+    },
+
+    refreshProductMedia() {
+      // Refresh the product to get updated media list
+      this.fetchProduct(this.$route.params.id);
     },
     
     formatDate(dateString) {

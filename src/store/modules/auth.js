@@ -70,7 +70,21 @@ const actions = {
       const response = await authService.register(userData);
       return response;
     } catch (error) {
-      commit('setError', error.response?.data || 'Registration failed');
+      // Handle different error response formats
+      let errorMessage = 'Registration failed';
+      if (error.response?.data?.detail) {
+        errorMessage = error.response.data.detail;
+      } else if (error.response?.data?.message) {
+        errorMessage = error.response.data.message;
+      } else if (error.response?.data?.title) {
+        errorMessage = error.response.data.title;
+      } else if (error.response?.data?.apiError?.errorMessage) {
+        errorMessage = error.response.data.apiError.errorMessage;
+      } else if (typeof error.response?.data === 'string') {
+        errorMessage = error.response.data;
+      }
+      
+      commit('setError', errorMessage);
       throw error;
     } finally {
       commit('setLoading', false);

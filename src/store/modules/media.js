@@ -4,7 +4,12 @@ const state = {
   media: [],
   currentMedia: null,
   loading: false,
-  error: null
+  error: null,
+  uploads: [], // Active uploads with progress
+  uploadProgress: {}, // Upload progress by file ID
+  validationErrors: {}, // File validation errors
+  maxFileSize: 10 * 1024 * 1024, // 10MB limit
+  allowedTypes: ['image/*', 'video/*', 'application/pdf']
 };
 
 const getters = {
@@ -12,9 +17,15 @@ const getters = {
   currentMedia: (state) => state.currentMedia,
   loading: (state) => state.loading,
   error: (state) => state.error,
+  uploads: (state) => state.uploads,
+  uploadProgress: (state) => state.uploadProgress,
+  validationErrors: (state) => state.validationErrors,
+  maxFileSize: (state) => state.maxFileSize,
+  allowedTypes: (state) => state.allowedTypes,
   getMediaByProductDetail: (state) => (productDetailId) => {
     return state.media.filter(media => media.productDetailId === productDetailId);
-  }
+  },
+  isUploading: (state) => state.uploads.length > 0
 };
 
 const actions = {
@@ -96,6 +107,67 @@ const actions = {
     } finally {
       commit('setLoading', false);
     }
+  },
+
+  // Upload actions
+  async uploadMedia({ commit, state }, { productDetailId, files }) {
+    commit('clearError');
+    
+    const uploadResults = [];
+    
+    for (const file of files) {
+      const fileId = `${file.name}-${Date.now()}`;
+      
+      // Validate file
+      const validation = mediaService.validateFile(file, state.maxFileSize, state.allowedTypes);
+      if (!validation.isValid) {
+        commit('setValidationErrors', { [fileId]: validation.errors });
+        continue;
+      }
+      
+      // Add to active uploads
+      commit('addUpload', { fileId, fileName: file.name, productDetailId });
+      
+      try {
+        const onProgress = (progress) => {
+          commit('setUploadProgress', { fileId, progress });
+        };
+        
+        const result = await mediaService.uploadMediaFile(productDetailId, file, onProgress);
+        commit('addMedia', result.media);
+        uploadResults.push(result);
+        
+      } catch (error) {
+        commit('setValidationErrors', { 
+          [fileId]: [error.response?.data?.detail || 'Upload failed'] 
+        });
+        throw error;
+      } finally {
+        commit('removeUpload', fileId);
+        commit('clearUploadProgress', fileId);
+      }
+    }
+    
+    return uploadResults;
+  },
+
+  validateFiles({ state }, files) {
+    const results = [];
+    
+    for (const file of files) {
+      const validation = mediaService.validateFile(file, state.maxFileSize, state.allowedTypes);
+      results.push({
+        file,
+        isValid: validation.isValid,
+        errors: validation.errors
+      });
+    }
+    
+    return results;
+  },
+
+  clearValidationErrors({ commit }) {
+    commit('clearValidationErrors');
   }
 };
 
@@ -139,6 +211,32 @@ const mutations = {
   
   clearError(state) {
     state.error = null;
+  },
+
+  // Upload mutations
+  addUpload(state, { fileId, fileName, productDetailId }) {
+    state.uploads.push({ fileId, fileName, productDetailId });
+  },
+
+  removeUpload(state, fileId) {
+    state.uploads = state.uploads.filter(upload => upload.fileId !== fileId);
+  },
+
+  setUploadProgress(state, { fileId, progress }) {
+    state.uploadProgress = { ...state.uploadProgress, [fileId]: progress };
+  },
+
+  clearUploadProgress(state, fileId) {
+    const { [fileId]: removed, ...remaining } = state.uploadProgress;
+    state.uploadProgress = remaining;
+  },
+
+  setValidationErrors(state, errors) {
+    state.validationErrors = { ...state.validationErrors, ...errors };
+  },
+
+  clearValidationErrors(state) {
+    state.validationErrors = {};
   }
 };
 
